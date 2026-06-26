@@ -3,21 +3,28 @@ import pickle
 import streamlit as st
 import pandas as pd
 import tensorflow as tf
+from pathlib import Path
 
 # Cached loaders
+BASE_DIR = Path(__file__).resolve().parent
+
 @st.cache_resource
 def load_ann_model():
-    return tf.keras.models.load_model('models/ann_model.keras')
+    model_path = BASE_DIR / "models" / "ann_model.keras"
+    return tf.keras.models.load_model(model_path)
 
 # Load Cached Encoders and Scalers
 @st.cache_resource
 def load_artifacts():
-    with open("artifacts/label_encoder.pkl", "rb") as file:
+    with open(BASE_DIR / "artifacts" / "label_encoder.pkl", "rb") as file:
         label_encoder = pickle.load(file)
-    with open("artifacts/onehot_encoder.pkl", "rb") as file:
+
+    with open(BASE_DIR / "artifacts" / "onehot_encoder.pkl", "rb") as file:
         onehot_encoder = pickle.load(file)
-    with open("artifacts/standard_scaler.pkl", "rb") as file:
+
+    with open(BASE_DIR / "artifacts" / "standard_scaler.pkl", "rb") as file:
         standard_scaler = pickle.load(file)
+        
     return label_encoder, onehot_encoder, standard_scaler
 
 # Load model + artifacts
