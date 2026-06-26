@@ -154,8 +154,8 @@ tensorboard --logdir logs/fit
 Clone the repository:
 
 ```bash
-git clone <my-repository-url>
-cd churn-modelling
+git clone https://github.com/pranayprasad7001/applied-ml-projects.git
+cd applied-ml-projects/classical-ml/customer-churn-prediction
 ```
 
 Create virtual environment:
