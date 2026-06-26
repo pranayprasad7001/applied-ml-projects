@@ -14,6 +14,15 @@ The project demonstrates an end-to-end machine learning workflow including:
 * Model artifact saving
 * Streamlit deployment
 
+## Live Demo
+
+Streamlit App: https://bank-customer-churn-predictor-ann.streamlit.app
+
+## Project Source
+
+GitHub Repository:
+https://github.com/pranayprasad7001/applied-ml-projects/tree/main/classical-ml/customer-churn-prediction
+
 ---
 
 ## Problem Statement
@@ -54,7 +63,7 @@ Target variable:
 ## Project Structure
 
 ```text
-churn-modelling/
+customer-churn-prediction/
 │── app.py
 │── requirements.txt
 │── README.md
@@ -132,6 +141,46 @@ Saved preprocessing artifacts:
 
 ---
 
+## Threshold Optimization
+
+Threshold tuning was performed to optimize the precision-recall tradeoff for churn prediction.
+
+Instead of using the default classification threshold of **0.5**, the threshold was lowered to **0.4** to improve the model's ability to detect churned customers.
+
+Results:
+
+* **Recall improved from 49% → 53%**
+* **F1-score improved**
+* Better sensitivity for identifying potential churn customers
+
+This adjustment helps reduce false negatives, which is important in churn prediction since missing a potential churn customer can result in revenue loss.
+
+---
+
+## Model Performance
+
+Final model performance on test data:
+
+- Accuracy: **85%**
+- Precision (Churn): **67%**
+- Recall (Churn): **53%**
+- F1-score (Churn): **59%**
+
+Confusion Matrix:
+
+|               | Predicted No Churn | Predicted Churn |
+|---|---:|---:|
+| Actual No Churn | 1486 | 107 |
+| Actual Churn | 191 | 216 |
+
+Observations:
+
+- The model performs strongly in identifying non-churn customers.
+- Threshold tuning improved churn recall from **49% → 53%**, increasing the model’s sensitivity toward churned customers.
+- This helps reduce false negatives, which is critical for customer retention strategies.
+
+---
+
 ## TensorBoard Integration
 
 TensorBoard was used for:
@@ -201,22 +250,6 @@ User Input → Preprocessing → Feature Scaling → ANN Model → Churn Probabi
 
 ---
 
-## Threshold Optimization
-
-Threshold tuning was performed to optimize the precision-recall tradeoff for churn prediction.
-
-Instead of using the default classification threshold of **0.5**, the threshold was lowered to **0.4** to improve the model's ability to detect churned customers.
-
-Results:
-
-* **Recall improved from 49% → 54%**
-* **F1-score improved**
-* Better sensitivity for identifying potential churn customers
-
-This adjustment helps reduce false negatives, which is important in churn prediction since missing a potential churn customer can result in revenue loss.
-
----
-
 ## Future Improvements
 
 * Hyperparameter tuning
@@ -224,13 +257,11 @@ This adjustment helps reduce false negatives, which is important in churn predic
 * Batch normalization
 * Learning rate scheduling
 * Docker deployment
-* Cloud deployment
 
 ---
 
 ## Author
 
-**Pranay Prasad**
-
-MTech in AI & ML
+**Pranay Prasad**  
+MTech in AI & ML  
 Aspiring Machine Learning Engineer
