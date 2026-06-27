@@ -1,151 +1,178 @@
 # 🚀 Machine Learning Project Workflow
 
 * **Project Name:** [Insert Project Name]
-* **Objective:** [e.g., Binary Classification of Fraud / Regression for Pricing]
+* **Objective:** [e.g., Binary Classification / Regression / Forecasting]
 * **Target Variable:** `[Target Column Name]`
 
 ---
 
-## 📊 Phase 1: Data Understanding & EDA
+# 📊 Phase 1: Data Understanding & EDA
 
-*Map the data landscape before transforming anything.*
+*Understand the dataset before transformations.*
 
-### ✅ Checklist
+## ✅ Checklist
 
-* [ ] **Data Source & Integrity Check**
-
-  * Source: `[Synthetic / Scraped / Production DB]`
-  * Total Rows: `[Count]`
-  * Total Columns: `[Count]`
+* [ ] Verify dataset source
+* [ ] Check duplicates
 
 ```python
 df.duplicated().sum()
 ```
 
-* [ ] **Target Leakage Verification**
-
-  * Ensure no feature contains future or proxy target information.
-
-* [ ] **Missingness Pattern Analysis**
+* [ ] Analyze missing values
 
 ```python
-(df.isnull().sum() / len(df)) * 100
+(df.isnull().sum()/len(df))*100
 ```
 
 Decision Rules:
 
-* Numerical → Median (skewed), Mean (normal)
+* Numerical → Mean / Median
+* Categorical → Mode / Missing Label
 
-* Categorical → Mode / `'Missing'`
+---
 
-* [ ] **Univariate Analysis**
+* [ ] Check feature distributions
 
 ```python
-df[col].nunique()
+df.describe()
 df.skew()
 ```
 
-Skew Rule:
-
-* Between -1 and 1 → okay
-
-* > 1 or <-1 → transformation candidate
-
-* [ ] **Outlier Detection (IQR)**
+Skew Rules:
 
 ```text
-Lower = Q1 - 1.5 × IQR
-Upper = Q3 + 1.5 × IQR
+-1 to 1 → Safe
+>1 → Log transform candidate
+<-1 → Reflect + Transform
 ```
 
-* [ ] **Multivariate Analysis**
+---
+
+* [ ] Detect outliers
+
+```text
+IQR Method:
+Lower = Q1 - 1.5*IQR
+Upper = Q3 + 1.5*IQR
+```
+
+---
+
+* [ ] Correlation analysis
 
 ```python
 df.corr()
 ```
 
-Flag:
+Rules:
 
-* Correlation > 0.85 → multicollinearity risk
+```text
+Correlation > 0.85 → Potential multicollinearity
+```
 
-* [ ] **Target Imbalance Check**
+---
+
+* [ ] Target balance check
 
 ```python
 df[target].value_counts(normalize=True)
 ```
 
+Rules:
+
+```text
+60:40 → Usually okay
+80:20 → Watch F1
+90:10+ → Use balancing methods
+```
+
 ---
 
-## ⚙️ Phase 2: Preprocessing & Feature Engineering
+# ⚙️ Phase 2: Preprocessing & Feature Engineering
 
-*Transform carefully. Split first.*
+*Split first. Transform later.*
 
-### ✅ Checklist
+## ✅ Checklist
 
-* [ ] **Data Splitting Strategy**
-
-  * Standard Split (`80/10/10`)
-  * Stratified Split (imbalanced)
-  * Time-Series Split (chronological)
+* [ ] Data split strategy chosen
 
 ```python
 from sklearn.model_selection import train_test_split
 ```
 
-* [ ] **Leakage Prevention**
+Choose:
+
+* Standard split
+* Stratified split
+* TimeSeries split
+
+---
+
+* [ ] Prevent data leakage
 
 ```python
 scaler.fit(X_train)
-X_train_scaled = scaler.transform(X_train)
-X_val_scaled = scaler.transform(X_val)
+X_train = scaler.transform(X_train)
+X_val = scaler.transform(X_val)
 ```
 
 Rule:
 
-* Fit only on train
-
-* Transform on validation/test
-
-* [ ] **Categorical Encoding**
-
-  * Low cardinality → OneHot
-  * High cardinality → Target Encoding / Embeddings
-  * Ordinal → Explicit Mapping
-
-* [ ] **Feature Scaling**
-
-  * StandardScaler → Normal distributions
-  * MinMaxScaler → Neural Networks
-  * RobustScaler → Heavy outliers
-
-* [ ] **Feature Selection**
-
-  * Remove high correlation (>0.85)
-  * Remove low variance features
-  * Remove irrelevant features
-
-* [ ] **Feature Dropping**
-
-  * IDs
-  * Raw text blobs
-  * Constants
-  * > 50% missing columns
+```text
+Never fit on full dataset
+```
 
 ---
 
-## 🏗️ Phase 3: Architecture Design & Compilation
+* [ ] Encoding selected
 
-*Build systematically.*
+| Scenario         | Method          |
+| ---------------- | --------------- |
+| Low cardinality  | OneHot          |
+| High cardinality | Target Encoding |
+| Deep learning    | Embeddings      |
+| Ordinal          | Mapping         |
 
-### ✅ Checklist
+---
 
-* [ ] **Naive Baseline**
+* [ ] Scaling selected
+
+| Scenario        | Method         |
+| --------------- | -------------- |
+| Normal data     | StandardScaler |
+| Neural networks | MinMaxScaler   |
+| Outliers        | RobustScaler   |
+
+---
+
+* [ ] Feature selection
+
+Remove:
+
+* High correlation
+* Low variance
+* IDs
+* Irrelevant columns
+* Constants
+
+---
+
+# 🏗️ Phase 3: Model Building & Compilation
+
+*Build baseline first.*
+
+## ✅ Checklist
+
+* [ ] Create dummy baseline
 
 ```python
 from sklearn.dummy import DummyClassifier, DummyRegressor
 ```
 
-* [ ] **Reproducibility**
+---
+
+* [ ] Fix random seeds
 
 ```python
 import random
@@ -157,34 +184,40 @@ np.random.seed(42)
 torch.manual_seed(42)
 ```
 
-* [ ] **Input/Output Layer Verification**
+---
 
-Input:
+* [ ] Verify input/output shapes
 
-```python
-X_train.shape[1]
-```
+| Task        | Output      |
+| ----------- | ----------- |
+| Regression  | 1 (Linear)  |
+| Binary      | 1 (Sigmoid) |
+| Multi-Class | N (Softmax) |
 
-Output Rules:
+---
 
-| Task                  | Nodes | Activation |
-| --------------------- | ----: | ---------- |
-| Regression            |     1 | Linear     |
-| Binary Classification |     1 | Sigmoid    |
-| Multi-Class           |     N | Softmax    |
+* [ ] Initialize weights
 
-* [ ] **Weight Initialization**
+| Activation | Initialization |
+| ---------- | -------------- |
+| ReLU       | He             |
+| LeakyReLU  | He             |
+| Sigmoid    | Xavier         |
+| Tanh       | Xavier         |
 
-  * ReLU/LeakyReLU → He
-  * Tanh/Sigmoid → Xavier
+---
 
-* [ ] **Regularization**
+* [ ] Add regularization
 
-  * Dropout (`0.2–0.5`)
-  * BatchNorm
-  * L2 Weight Decay
+* Dropout
 
-* [ ] **Loss Selection**
+* BatchNorm
+
+* Weight Decay
+
+---
+
+* [ ] Select loss function
 
 ```python
 # Classification
@@ -196,153 +229,287 @@ MSELoss()
 HuberLoss()
 ```
 
-* [ ] **Optimizer**
+---
+
+* [ ] Select optimizer
 
 ```python
 torch.optim.AdamW(model.parameters(), lr=3e-4)
 ```
 
-* [ ] **Callbacks**
+---
 
-  * ReduceLROnPlateau
-  * EarlyStopping
-  * Gradient Clipping (`max_norm=1.0`)
+# 📊 Phase 4: Training Diagnostics
+
+*Watch learning behavior.*
+
+## Validation Strategy
+
+Choose:
+
+* KFold
+* StratifiedKFold
+* TimeSeriesSplit
 
 ---
 
-## 📊 Phase 4: Training Diagnostics & Evaluation
+## Loss Diagnostics
 
-*Monitor learning behavior.*
-
-### Validation Strategy Check
-
-* [ ] K-Fold Cross Validation
-* [ ] Stratified K-Fold
-* [ ] TimeSeriesSplit
-
----
-
-### 🛠️ Loss Curve Diagnostic Cheat Sheet
-
-| Pattern                    | Meaning               | Action                        |
-| -------------------------- | --------------------- | ----------------------------- |
-| Train ↓, Val ↑             | Overfitting           | More regularization           |
-| Train ↑, Val ↑ (flat high) | Underfitting          | Bigger model                  |
-| Sawtooth Val Loss          | LR too high           | Lower LR                      |
-| Flatline from start        | No effective learning | Check LR / init / activations |
-| Sudden spikes              | Gradient explosion    | Gradient clipping             |
+| Pattern       | Meaning            | Action             |
+| ------------- | ------------------ | ------------------ |
+| Train ↓ Val ↑ | Overfitting        | Add regularization |
+| Both high     | Underfitting       | Bigger model       |
+| Sawtooth      | LR too high        | Lower LR           |
+| Flatline      | No learning        | Check LR/init      |
+| Sudden spikes | Gradient explosion | Clip gradients     |
 
 ---
 
-## 📈 Phase 5: Final Metric Interpretation
+# 🎛️ Phase 4.5: Hyperparameter Tuning
 
-*Understand performance beyond raw numbers.*
+*Optimize systematically.*
 
-### Classification Metrics
+---
 
-| Metric    | Good Sign         | Warning Sign    | Interpretation           |
-| --------- | ----------------- | --------------- | ------------------------ |
-| Accuracy  | High + F1 aligned | High but low F1 | May be misleading        |
-| Precision | >0.80             | Low             | Too many false positives |
-| Recall    | >0.80             | Low             | Missing positives        |
-| F1 Score  | Balanced with P/R | Low             | Poor balance             |
-| PR-AUC    | >0.70             | <0.50           | Minority class quality   |
-| ROC-AUC   | >0.80             | ~0.50           | Separability             |
+## Tree Models
 
-#### Quick Rules
+Tune:
 
-```text
-High Accuracy + Low Recall = Minority ignored
-High Precision + Low Recall = Conservative model
-Low Precision + High Recall = Aggressive model
-High Both = Strong model
-Low Both = Weak model
+| Parameter         | Meaning         |
+| ----------------- | --------------- |
+| n_estimators      | Number of trees |
+| max_depth         | Tree complexity |
+| min_samples_split | Split control   |
+| min_samples_leaf  | Leaf smoothness |
+| max_features      | Randomness      |
+
+Example:
+
+```python
+param_grid = {
+    "n_estimators": [100, 200, 500],
+    "max_depth": [5, 10, 20],
+    "min_samples_split": [2, 5, 10]
+}
 ```
 
 ---
 
-### Regression Metrics
+## Neural Networks
 
-| Metric      | Good Sign    | Warning Sign | Interpretation              |
-| ----------- | ------------ | ------------ | --------------------------- |
-| MAE         | Low          | High         | Average error magnitude     |
-| RMSE        | Close to MAE | Much higher  | Outlier mistakes            |
-| R² Score    | >0.80        | <0.50        | Explained variance          |
-| Adjusted R² | Close to R²  | Much lower   | Irrelevant features present |
+Tune:
 
-#### Quick Rules
+| Parameter     | Range       |
+| ------------- | ----------- |
+| Learning Rate | 1e-5 → 1e-2 |
+| Batch Size    | 16 → 256    |
+| Dropout       | 0.2 → 0.5   |
+| Hidden Units  | 32 → 1024   |
+| Layers        | 1 → 10      |
+| Weight Decay  | 1e-6 → 1e-2 |
+
+---
+
+## Search Methods
+
+| Method        | Use Case            |
+| ------------- | ------------------- |
+| Grid Search   | Small space         |
+| Random Search | Large space         |
+| Bayesian      | Expensive models    |
+| Hyperband     | Deep learning       |
+| Optuna        | General best choice |
+
+---
+
+### Grid Search Example
+
+```python
+from sklearn.model_selection import GridSearchCV
+
+grid = GridSearchCV(
+    model,
+    param_grid,
+    cv=5,
+    scoring="f1"
+)
+
+grid.fit(X_train, y_train)
+```
+
+---
+
+### Tuning Rules
+
+## Overfitting
 
 ```text
-RMSE ≈ MAE → Stable predictions
+↓ max_depth
+↑ dropout
+↑ regularization
+↓ learning rate
+```
+
+---
+
+## Underfitting
+
+```text
+↑ layers
+↑ hidden units
+↑ max_depth
+↓ dropout
+↑ epochs
+```
+
+---
+
+## Unstable Training
+
+```text
+↓ learning rate
+↑ batch size
+Add BatchNorm
+Use gradient clipping
+```
+
+---
+
+# 📈 Phase 5: Final Metric Interpretation
+
+*Interpret model behavior.*
+
+---
+
+## Classification Metrics
+
+| Metric    | Good              | Warning               |
+| --------- | ----------------- | --------------------- |
+| Accuracy  | High + F1 aligned | Misleading imbalance  |
+| Precision | >0.80             | Too many FP           |
+| Recall    | >0.80             | Missing positives     |
+| F1        | Balanced          | Weak precision/recall |
+| PR-AUC    | >0.70             | Weak minority         |
+| ROC-AUC   | >0.80             | Poor separability     |
+
+Quick Rules:
+
+```text
+High Accuracy + Low Recall = Minority ignored
+High Precision + Low Recall = Conservative
+Low Precision + High Recall = Aggressive
+High Both = Strong model
+```
+
+---
+
+## Regression Metrics
+
+| Metric      | Good         | Warning             |
+| ----------- | ------------ | ------------------- |
+| MAE         | Low          | High                |
+| RMSE        | Close to MAE | Outlier mistakes    |
+| R²          | >0.80        | Weak fit            |
+| Adjusted R² | Close to R²  | Irrelevant features |
+
+Quick Rules:
+
+```text
+RMSE ≈ MAE → Stable
 RMSE >> MAE → Outlier issues
-R² = 1 → Perfect fit
-R² > 0.8 → Strong
 R² < 0 → Worse than baseline
 ```
 
 ---
 
-### Loss Relationship Check
+## Loss Relationship Check
 
-| Scenario                      | Meaning                   |
-| ----------------------------- | ------------------------- |
-| Train Loss ↓ + Val Loss ↓     | Healthy learning          |
-| Train Loss ↓ + Val Loss ↑     | Overfitting               |
-| Both High + Flat              | Underfitting              |
-| Val Loss unstable             | LR too high               |
-| Train Loss low + metrics poor | Leakage / threshold issue |
+| Scenario                     | Meaning                    |
+| ---------------------------- | -------------------------- |
+| Train ↓ Val ↓                | Healthy                    |
+| Train ↓ Val ↑                | Overfitting                |
+| Both high                    | Underfitting               |
+| Val unstable                 | LR too high                |
+| Low train loss + bad metrics | Leakage or threshold issue |
 
 ---
 
-## 🚀 Production Readiness Check
+# 🚀 Phase 6: Production Readiness
 
-* [ ] Inference latency tested
+## Checklist
 
-* [ ] Model version controlled
-
-* [ ] Preprocessing pipeline saved
-
+* [ ] Model saved
+* [ ] Artifacts saved
+* [ ] Logging active
+* [ ] Inference tested
 * [ ] Input schema validated
+* [ ] Monitoring setup ready
 
-* [ ] Logging & monitoring prepared
+Saved formats:
 
-* [ ] **Saved deployment format**
+```text
+.pkl → Scikit-learn
+.pt → PyTorch
+.onnx → Cross-platform
+.tflite → Edge/Mobile
+```
 
-  * `.pkl` → Scikit-learn
-  * `.pt` → PyTorch
-  * `.onnx` → Cross-platform
-  * `.tflite` → Mobile/Edge
+Optimization:
 
-* [ ] Quantized / pruned if required
+* Quantization
+* Pruning
+* ONNX conversion
 
 ---
 
-## 📂 Recommended Project Structure
+# 📂 Recommended Project Structure
 
 ```text
 project/
+│── artifacts/
+│   │── scaler.pkl
+│   │── encoder.pkl
+│   │── pipeline.pkl
+│
 │── data/
-│── notebooks/
-│── src/
-│   │── preprocessing.py
-│   │── model.py
-│   │── train.py
-│   │── evaluate.py
+│   │── raw/
+│   │── processed/
+│
+│── logs/
+│   │── fit/
+│
 │── models/
-│── results/
+│   │── model.pkl
+│   │── best_model.pkl
+│   │── model_metadata.json
+│
+│── notebooks/
+│   │── experimentation.ipynb
+│
+│── src/
+│   │── data_ingestion.py
+│   │── preprocessing.py
+│   │── train.py
+│   │── tune.py
+│   │── evaluate.py
+│   │── predict.py
+│
 │── README.md
+│── app.py
 │── requirements.txt
+│── runtime.txt
 ```
 
 ---
 
-## 📝 Notes
+# 📝 Notes
 
 This workflow ensures:
 
-* Proper data handling
+* Proper EDA
 * Zero leakage
-* Better diagnostics
-* Faster debugging
-* Reproducibility
-* Production readiness
+* Better preprocessing decisions
+* Better hyperparameter tuning
+* Better debugging
+* Better reproducibility
+* Better deployment readiness
