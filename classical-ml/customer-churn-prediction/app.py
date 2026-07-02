@@ -138,10 +138,18 @@ if st.button("Predict Churn Risk", type="primary", use_container_width=True):
     st.markdown("### Results")
 
     if will_churn:
-        st.error(f"⚠️ High Risk of Churn! (Probability: {prob:.1%})")
-        st.markdown(
-            "**Recommendation:** Consider targeted retention strategies, such as fee waivers or promotional interest rates."
+        st.error(
+            f"⚠️ High Risk of Churn!\n\n"
+            f"Churn Probability: {prob:.1%}\n"
+            f"Stay Probability: {(1 - prob):.1%}"
+        )
+        st.warning(
+            "Recommendation: Consider targeted retention strategies, such as fee waivers or promotional interest rates."
         )
     else:
-        st.success(f"✅ Customer is likely to stay. (Probability: {prob:.1%})")
-        st.markdown("**Recommendation:** Maintain standard engagement protocols.")
+        st.success(
+            f"✅ Customer is likely to stay.\n\n"
+            f"Stay Probability: {(1 - prob):.1%}\n"
+            f"Churn Probability: {prob:.1%}"
+        )
+        st.info("Recommendation: Maintain standard engagement protocols.")
